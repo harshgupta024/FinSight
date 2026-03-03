@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # ─── Backend API ───────────────────────────
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: finsight-api
+    ports:
+      - '5000:5000'
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/finsight
+      - JWT_SECRET=${JWT_SECRET:-finsight_production_secret}
+      - JWT_EXPIRE=7d
+      - COINGECKO_API_URL=https://api.coingecko.com/api/v3
+      - REDIS_URL=redis://redis:6379
+      - CLIENT_URL=http://localhost:5173
+    depends_on:
+      - mongo
+      - redis
+    restart: unless-stopped
+    networks:
+      - finsight-network
+
+  # ─── MongoDB ───────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: finsight-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+    networks:
+      - finsight-network
+
+  # ─── Redis ─────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: finsight-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - finsight-network
+
+volumes:
+  mongo-data:
+  redis-data:
+
+networks:
+  finsight-network:
+    driver: bridge
