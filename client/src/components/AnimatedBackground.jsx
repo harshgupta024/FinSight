@@ -1,23 +1,26 @@
 /**
- * AnimatedBackground
- * Financial-themed animated particles and floating elements.
- * Adapts to light/dark mode with different color schemes.
+ * AnimatedBackground — Gold Particle Network Canvas
+ * 90 particles with connection lines, mouse attraction, and cursor glow.
  */
 import { useEffect, useRef } from 'react';
 import { useTheme } from '../hooks/useTheme';
 
+const PARTICLE_COUNT = 90;
+const CONNECTION_DIST = 110;
+const MOUSE_ATTRACT_DIST = 160;
+const MOUSE_FORCE = 0.015;
+const MAX_SPEED = 2.5;
+
 const AnimatedBackground = () => {
     const canvasRef = useRef(null);
+    const mouseRef = useRef({ x: -999, y: -999 });
     const { isDark } = useTheme();
 
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-
         const ctx = canvas.getContext('2d');
         let animationId;
-        let particles = [];
-        let floatingSymbols = [];
 
         const resize = () => {
             canvas.width = window.innerWidth;
@@ -26,62 +29,66 @@ const AnimatedBackground = () => {
         resize();
         window.addEventListener('resize', resize);
 
-        // Financial symbols
-        const symbols = ['$', '₿', '€', '£', '¥', '◆', '▲', '▼', '⬡'];
+        // Track mouse
+        const onMouseMove = (e) => {
+            mouseRef.current = { x: e.clientX, y: e.clientY };
+        };
+        window.addEventListener('mousemove', onMouseMove);
 
         // Create particles
-        const createParticles = () => {
-            particles = [];
-            const count = Math.min(80, Math.floor((canvas.width * canvas.height) / 15000));
-            for (let i = 0; i < count; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.4,
-                    vy: (Math.random() - 0.5) * 0.4,
-                    radius: Math.random() * 2 + 0.5,
-                    opacity: Math.random() * 0.5 + 0.1,
-                });
-            }
-        };
+        const particles = [];
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            particles.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                vx: (Math.random() - 0.5) * 0.8,
+                vy: (Math.random() - 0.5) * 0.8,
+                radius: Math.random() * 1.8 + 0.4,
+                opacity: Math.random() * 0.5 + 0.2,
+            });
+        }
 
-        // Create floating financial symbols
-        const createSymbols = () => {
-            floatingSymbols = [];
-            const count = Math.min(12, Math.floor(canvas.width / 150));
-            for (let i = 0; i < count; i++) {
-                floatingSymbols.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vy: -(Math.random() * 0.3 + 0.1),
-                    vx: (Math.random() - 0.5) * 0.2,
-                    symbol: symbols[Math.floor(Math.random() * symbols.length)],
-                    size: Math.random() * 16 + 10,
-                    opacity: Math.random() * 0.15 + 0.03,
-                    rotation: Math.random() * Math.PI * 2,
-                    rotationSpeed: (Math.random() - 0.5) * 0.01,
-                });
-            }
-        };
-
-        createParticles();
-        createSymbols();
+        const goldR = isDark ? 212 : 184;
+        const goldG = isDark ? 175 : 150;
+        const goldB = isDark ? 55 : 15;
 
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const mouse = mouseRef.current;
 
-            // Color scheme based on theme
-            const particleColor = isDark ? '129, 140, 248' : '99, 102, 241'; // primary-400 / primary-500
-            const lineColor = isDark ? '129, 140, 248' : '99, 102, 241';
-            const symbolColor = isDark ? '129, 140, 248' : '79, 70, 229';
+            // Draw radial glow at cursor
+            if (mouse.x > 0 && mouse.y > 0) {
+                const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 180);
+                gradient.addColorStop(0, `rgba(${goldR}, ${goldG}, ${goldB}, 0.07)`);
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(mouse.x - 180, mouse.y - 180, 360, 360);
+            }
 
-            // Draw and update particles
+            // Update & draw particles
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
+
+                // Mouse attraction
+                const dx = mouse.x - p.x;
+                const dy = mouse.y - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < MOUSE_ATTRACT_DIST && dist > 0) {
+                    p.vx += (dx / dist) * MOUSE_FORCE;
+                    p.vy += (dy / dist) * MOUSE_FORCE;
+                }
+
+                // Cap speed
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                if (speed > MAX_SPEED) {
+                    p.vx = (p.vx / speed) * MAX_SPEED;
+                    p.vy = (p.vy / speed) * MAX_SPEED;
+                }
+
                 p.x += p.vx;
                 p.y += p.vy;
 
-                // Wrap around edges
+                // Wrap edges
                 if (p.x < 0) p.x = canvas.width;
                 if (p.x > canvas.width) p.x = 0;
                 if (p.y < 0) p.y = canvas.height;
@@ -90,50 +97,26 @@ const AnimatedBackground = () => {
                 // Draw particle
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${particleColor}, ${p.opacity})`;
+                ctx.fillStyle = `rgba(${goldR}, ${goldG}, ${goldB}, ${p.opacity})`;
                 ctx.fill();
 
                 // Draw connections
                 for (let j = i + 1; j < particles.length; j++) {
                     const p2 = particles[j];
-                    const dx = p.x - p2.x;
-                    const dy = p.y - p2.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const cdx = p.x - p2.x;
+                    const cdy = p.y - p2.y;
+                    const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
 
-                    if (dist < 120) {
+                    if (cdist < CONNECTION_DIST) {
+                        const lineOpacity = 0.18 * (1 - cdist / CONNECTION_DIST);
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(${lineColor}, ${0.08 * (1 - dist / 120)})`;
+                        ctx.strokeStyle = `rgba(${goldR}, ${goldG}, ${goldB}, ${lineOpacity})`;
                         ctx.lineWidth = 0.5;
                         ctx.stroke();
                     }
                 }
-            }
-
-            // Draw floating symbols
-            for (const s of floatingSymbols) {
-                s.y += s.vy;
-                s.x += s.vx;
-                s.rotation += s.rotationSpeed;
-
-                // Reset when off-screen
-                if (s.y < -30) {
-                    s.y = canvas.height + 30;
-                    s.x = Math.random() * canvas.width;
-                }
-                if (s.x < -30) s.x = canvas.width + 30;
-                if (s.x > canvas.width + 30) s.x = -30;
-
-                ctx.save();
-                ctx.translate(s.x, s.y);
-                ctx.rotate(s.rotation);
-                ctx.font = `${s.size}px "Inter", sans-serif`;
-                ctx.fillStyle = `rgba(${symbolColor}, ${s.opacity})`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(s.symbol, 0, 0);
-                ctx.restore();
             }
 
             animationId = requestAnimationFrame(animate);
@@ -144,14 +127,22 @@ const AnimatedBackground = () => {
         return () => {
             cancelAnimationFrame(animationId);
             window.removeEventListener('resize', resize);
+            window.removeEventListener('mousemove', onMouseMove);
         };
     }, [isDark]);
 
     return (
         <canvas
             ref={canvasRef}
-            className="fixed inset-0 pointer-events-none z-0"
-            style={{ opacity: isDark ? 0.6 : 0.4 }}
+            style={{
+                position: 'fixed',
+                inset: 0,
+                width: '100vw',
+                height: '100vh',
+                zIndex: 0,
+                pointerEvents: 'none',
+                opacity: isDark ? 0.7 : 0.4,
+            }}
         />
     );
 };

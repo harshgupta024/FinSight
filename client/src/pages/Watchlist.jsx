@@ -1,8 +1,9 @@
 /**
- * Watchlist Page – Enhanced with theme support
+ * Watchlist — Gold-themed with TiltCards, skeleton loading
  */
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import TiltCard from '../components/TiltCard';
 import api from '../services/api';
 
 const Watchlist = () => {
@@ -16,7 +17,6 @@ const Watchlist = () => {
         try {
             const res = await api.get('/watchlist');
             const data = res.data?.data;
-            // Backend returns { watchlist: { items: [...] } }
             setWatchlist(data?.watchlist || data || { items: [] });
         } catch {
             setWatchlist({ items: [] });
@@ -65,22 +65,30 @@ const Watchlist = () => {
         }
     };
 
-    if (loading) return <div className="flex justify-center py-32"><div className="spinner" /></div>;
+    if (loading) {
+        return (
+            <div className="space-y-6 page-enter">
+                <div className="skeleton skeleton-heading" style={{ width: '25%' }} />
+                <div className="skeleton" style={{ height: 80, borderRadius: '1rem' }} />
+                <div className="skeleton" style={{ height: 300, borderRadius: '1rem' }} />
+            </div>
+        );
+    }
 
     const items = watchlist?.items || [];
 
     return (
         <div className="page-enter space-y-6">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            <div className="fade-slide-up">
+                <h1 className="text-2xl font-bold" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, color: 'var(--text-primary)' }}>
                     <span className="text-gradient">Watchlist</span>
                 </h1>
                 <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Track your favorite cryptocurrencies</p>
             </div>
 
             {/* Search */}
-            <div className="glass-card p-5">
+            <TiltCard className="p-5 fade-slide-up" style={{ animationDelay: '0.08s' }}>
                 <div className="flex gap-3">
                     <div className="relative flex-1">
                         <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>
@@ -98,7 +106,7 @@ const Watchlist = () => {
                     <button onClick={handleSearch} disabled={searching} className="btn-primary ripple text-sm whitespace-nowrap">
                         {searching ? (
                             <span className="flex items-center gap-2">
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                 Searching…
                             </span>
                         ) : 'Search'}
@@ -108,20 +116,20 @@ const Watchlist = () => {
                 {/* Search results */}
                 {searchResults.length > 0 && (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {searchResults.map((coin) => (
-                            <div key={coin.id} className="flex items-center justify-between p-3 rounded-xl transition-all hover:scale-[1.01]"
-                                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)' }}>
+                        {searchResults.map((coin, i) => (
+                            <div key={coin.id} className="flex items-center justify-between p-3 rounded-xl transition-all hover:scale-[1.01] fade-slide-up"
+                                style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', animationDelay: `${i * 0.05}s` }}>
                                 <div className="flex items-center gap-2">
                                     {coin.thumb && <img src={coin.thumb} alt="" className="w-6 h-6 rounded-full" />}
                                     <div>
                                         <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{coin.name}</div>
-                                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{coin.symbol?.toUpperCase()}</div>
+                                        <div className="font-mono" style={{ color: 'var(--text-muted)', fontSize: '0.65rem' }}>{coin.symbol?.toUpperCase()}</div>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => handleAdd(coin.symbol, coin.name)}
                                     className="text-xs font-medium px-3 py-1.5 rounded-lg ripple"
-                                    style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}
+                                    style={{ background: 'var(--gold-dim)', color: 'var(--gold)' }}
                                 >
                                     + Add
                                 </button>
@@ -129,19 +137,19 @@ const Watchlist = () => {
                         ))}
                     </div>
                 )}
-            </div>
+            </TiltCard>
 
             {/* Watchlist items */}
-            <div className="glass-card overflow-hidden chart-container">
+            <TiltCard className="overflow-hidden chart-container" style={{ animationDelay: '0.16s' }}>
                 <div className="p-5 border-b" style={{ borderColor: 'var(--border-color)' }}>
                     <div className="flex items-center justify-between">
-                        <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>Your Watchlist</h3>
-                        <span className="badge" style={{ background: 'var(--accent-glow)', color: 'var(--accent)' }}>{items.length} coins</span>
+                        <h3 className="font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Syne', sans-serif" }}>Your Watchlist</h3>
+                        <span className="badge badge-gold">{items.length} coins</span>
                     </div>
                 </div>
                 {items.length === 0 ? (
                     <div className="p-12 text-center">
-                        <div className="text-4xl mb-3">⭐</div>
+                        <div className="text-4xl mb-3" style={{ color: 'var(--gold)' }}>★</div>
                         <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>Watchlist is empty</p>
                         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Search and add coins to track them</p>
                     </div>
@@ -157,18 +165,18 @@ const Watchlist = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {items.map((item) => (
-                                    <tr key={item._id}>
+                                {items.map((item, i) => (
+                                    <tr key={item._id} className="fade-slide-up" style={{ animationDelay: `${i * 0.05}s` }}>
                                         <td>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                                                    style={{ background: 'linear-gradient(135deg, var(--accent), #a855f7)' }}>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                                                    style={{ background: 'linear-gradient(135deg, var(--gold), #f5d87a)', color: '#05060d' }}>
                                                     {item.symbol.slice(0, 2).toUpperCase()}
                                                 </div>
-                                                <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{item.name}</span>
+                                                <span className="font-medium text-sm" style={{ color: 'var(--text-primary)' }}>{item.name}</span>
                                             </div>
                                         </td>
-                                        <td className="font-mono" style={{ color: 'var(--text-muted)' }}>{item.symbol.toUpperCase()}</td>
+                                        <td className="font-mono" style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>{item.symbol.toUpperCase()}</td>
                                         <td className="text-sm" style={{ color: 'var(--text-muted)' }}>
                                             {item.addedAt || item.createdAt
                                                 ? new Date(item.addedAt || item.createdAt).toLocaleDateString()
@@ -183,7 +191,7 @@ const Watchlist = () => {
                         </table>
                     </div>
                 )}
-            </div>
+            </TiltCard>
         </div>
     );
 };

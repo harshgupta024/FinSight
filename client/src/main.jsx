@@ -23,12 +23,17 @@ ReactDOM.createRoot(document.getElementById('root')).render(
                                 border: '1px solid var(--border-color)',
                                 borderRadius: '12px',
                                 backdropFilter: 'blur(12px)',
+                                fontFamily: "'DM Sans', sans-serif",
+                                fontSize: '0.875rem',
                             },
                             success: {
-                                iconTheme: { primary: '#10b981', secondary: 'var(--text-primary)' },
+                                iconTheme: { primary: '#d4af37', secondary: '#05060d' },
                             },
                             error: {
-                                iconTheme: { primary: '#ef4444', secondary: 'var(--text-primary)' },
+                                iconTheme: { primary: '#ff453a', secondary: '#05060d' },
+                            },
+                            loading: {
+                                iconTheme: { primary: '#d4af37', secondary: 'var(--bg-card)' },
                             },
                         }}
                     />

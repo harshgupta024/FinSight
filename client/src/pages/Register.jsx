@@ -1,10 +1,11 @@
 /**
- * Register Page – Enhanced with animations and theme support
+ * Register Page — Gold-themed with particle canvas
  */
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import AnimatedBackground from '../components/AnimatedBackground';
+import CustomCursor from '../components/CustomCursor';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Register = () => {
@@ -31,7 +32,9 @@ const Register = () => {
             style={{ background: 'var(--bg-primary)' }}>
             <div className="bg-glow bg-glow-1" />
             <div className="bg-glow bg-glow-2" />
+            <div className="grid-overlay" />
             <AnimatedBackground />
+            <CustomCursor />
 
             <div className="absolute top-6 right-6 z-20">
                 <ThemeToggle />
@@ -39,11 +42,17 @@ const Register = () => {
 
             <div className="relative z-10 w-full max-w-md px-4 page-enter">
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold glow-accent"
-                        style={{ background: 'linear-gradient(135deg, var(--accent), #a855f7)' }}>
-                        F
+                    <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl font-bold"
+                        style={{
+                            background: 'linear-gradient(135deg, var(--gold), #f5d87a)',
+                            color: '#05060d',
+                            boxShadow: '0 0 30px rgba(212, 175, 55, 0.3)',
+                        }}>
+                        ◈
                     </div>
-                    <h1 className="text-3xl font-bold text-gradient">Create Account</h1>
+                    <h1 className="text-3xl font-bold text-gradient" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }}>
+                        Create Account
+                    </h1>
                     <p className="mt-2 text-sm" style={{ color: 'var(--text-muted)' }}>
                         Start tracking your portfolio today
                     </p>
@@ -53,44 +62,30 @@ const Register = () => {
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {fields.map(({ key, type, label, placeholder, icon }) => (
                             <div key={key}>
-                                <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text-primary)' }}>
-                                    {label}
-                                </label>
+                                <label className="block mb-2 section-label">{label}</label>
                                 <div className="relative">
                                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }}>
                                         {icon}
                                     </span>
-                                    <input
-                                        type={type}
-                                        className="input-field"
-                                        placeholder={placeholder}
-                                        required
-                                        value={form[key]}
-                                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                                    />
+                                    <input type={type} className="input-field" placeholder={placeholder} required
+                                        value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
                                 </div>
                             </div>
                         ))}
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full ripple"
-                        >
+                        <button type="submit" disabled={loading} className="btn-primary w-full ripple">
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                                     Creating account…
                                 </span>
-                            ) : (
-                                'Create Account'
-                            )}
+                            ) : 'Create Account'}
                         </button>
                     </form>
 
                     <p className="mt-6 text-center text-sm" style={{ color: 'var(--text-muted)' }}>
                         Already have an account?{' '}
-                        <Link to="/login" className="font-semibold hover:underline" style={{ color: 'var(--accent)' }}>
+                        <Link to="/login" className="font-semibold hover:underline" style={{ color: 'var(--gold)' }}>
                             Sign in
                         </Link>
                     </p>

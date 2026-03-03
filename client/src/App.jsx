@@ -4,6 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AnimatedBackground from './components/AnimatedBackground';
+import CustomCursor from './components/CustomCursor';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -14,13 +15,18 @@ import Alerts from './pages/Alerts';
 /* Layout wrapper for authenticated pages */
 const AppLayout = () => (
     <div className="min-h-screen relative" style={{ background: 'var(--bg-primary)' }}>
-        {/* Ambient glow blobs */}
+        {/* Background layers */}
         <div className="bg-glow bg-glow-1" />
         <div className="bg-glow bg-glow-2" />
         <div className="bg-glow bg-glow-3" />
+        <div className="grid-overlay" />
+        <div className="noise-overlay" />
 
-        {/* Animated particles */}
+        {/* Animated gold particle canvas */}
         <AnimatedBackground />
+
+        {/* Custom cursor */}
+        <CustomCursor />
 
         {/* Navbar */}
         <Navbar />
@@ -43,7 +49,9 @@ const App = () => {
                 <AnimatedBackground />
                 <div className="text-center relative z-10">
                     <div className="spinner mx-auto mb-4" />
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading FinSight…</p>
+                    <p className="text-sm" style={{ color: 'var(--text-muted)', fontFamily: "'Space Mono', monospace" }}>
+                        Loading FinSight…
+                    </p>
                 </div>
             </div>
         );
