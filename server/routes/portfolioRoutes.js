@@ -8,6 +8,7 @@ const {
     addAsset,
     updateAsset,
     deleteAsset,
+    getAnalytics,
 } = require('../controllers/portfolioController');
 const { protect } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
@@ -18,6 +19,7 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/', getPortfolio);
+router.get('/analytics', getAnalytics);
 
 router.post(
     '/asset',

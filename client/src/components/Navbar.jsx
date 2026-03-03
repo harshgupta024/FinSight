@@ -15,6 +15,7 @@ const Navbar = () => {
         { to: '/watchlist', label: 'Watchlist', icon: '★' },
         { to: '/alerts', label: 'Alerts', icon: '▲' },
         { to: '/ai-advisor', label: 'AI Advisor', icon: '◉' },
+        { to: '/analytics', label: 'Analytics', icon: '◎' },
     ];
 
     return (
