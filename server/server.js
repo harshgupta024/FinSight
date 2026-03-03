@@ -23,6 +23,7 @@ const portfolioRoutes = require('./routes/portfolioRoutes');
 const watchlistRoutes = require('./routes/watchlistRoutes');
 const alertRoutes = require('./routes/alertRoutes');
 const marketRoutes = require('./routes/marketRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 
 // Initialize Express
 const app = express();
@@ -60,6 +61,7 @@ app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/market', marketRoutes);
+app.use('/api/ai', aiRoutes);
 
 // ─── Health Check ───────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

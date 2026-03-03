@@ -14,6 +14,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Watchlist = lazy(() => import('./pages/Watchlist'));
 const Alerts = lazy(() => import('./pages/Alerts'));
+const AiAdvisor = lazy(() => import('./pages/AiAdvisor'));
 
 /* Page-level loading skeleton */
 const PageSkeleton = () => (
@@ -103,6 +104,7 @@ const App = () => {
                     <Route path="/portfolio" element={<Portfolio />} />
                     <Route path="/watchlist" element={<Watchlist />} />
                     <Route path="/alerts" element={<Alerts />} />
+                    <Route path="/ai-advisor" element={<AiAdvisor />} />
                 </Route>
 
                 {/* Default redirect */}
