@@ -1,47 +1,75 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * usePortfolio — TanStack Query version
+ * useQuery for fetching, useMutation for add/update/delete with cache invalidation
+ */
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import api from '../services/api';
 
+const PORTFOLIO_KEY = ['portfolio'];
+
 export const usePortfolio = () => {
-    const [portfolio, setPortfolio] = useState(null);
-    const [summary, setSummary] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const queryClient = useQueryClient();
 
-    const fetchPortfolio = useCallback(async () => {
-        try {
-            setLoading(true);
+    /* ── Fetch portfolio ── */
+    const {
+        data: rawData,
+        isLoading: loading,
+        error,
+        refetch: fetchPortfolio,
+    } = useQuery({
+        queryKey: PORTFOLIO_KEY,
+        queryFn: async () => {
             const { data } = await api.get('/portfolio');
-            setPortfolio(data.data.portfolio);
-            setSummary(data.data.summary);
-            setError(null);
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to fetch portfolio');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+            return data.data;
+        },
+        staleTime: 30_000,
+        select: (data) => ({
+            portfolio: data?.portfolio || data || { assets: [] },
+            summary: data?.summary || null,
+        }),
+    });
 
-    const addAsset = useCallback(async (assetData) => {
-        const { data } = await api.post('/portfolio/asset', assetData);
-        await fetchPortfolio();
-        return data;
-    }, [fetchPortfolio]);
+    const portfolio = rawData?.portfolio || { assets: [] };
+    const summary = rawData?.summary || null;
 
-    const updateAsset = useCallback(async (assetId, assetData) => {
-        const { data } = await api.put(`/portfolio/asset/${assetId}`, assetData);
-        await fetchPortfolio();
-        return data;
-    }, [fetchPortfolio]);
+    /* ── Add asset ── */
+    const addMutation = useMutation({
+        mutationFn: (assetData) => api.post('/portfolio/asset', assetData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: PORTFOLIO_KEY });
+            toast.success('Asset added!');
+        },
+    });
 
-    const deleteAsset = useCallback(async (assetId) => {
-        const { data } = await api.delete(`/portfolio/asset/${assetId}`);
-        await fetchPortfolio();
-        return data;
-    }, [fetchPortfolio]);
+    /* ── Update asset ── */
+    const updateMutation = useMutation({
+        mutationFn: ({ assetId, assetData }) => api.put(`/portfolio/asset/${assetId}`, assetData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: PORTFOLIO_KEY });
+            toast.success('Asset updated!');
+        },
+    });
 
-    useEffect(() => {
-        fetchPortfolio();
-    }, [fetchPortfolio]);
+    /* ── Delete asset ── */
+    const deleteMutation = useMutation({
+        mutationFn: (assetId) => api.delete(`/portfolio/asset/${assetId}`),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: PORTFOLIO_KEY });
+            toast.success('Asset removed');
+        },
+    });
 
-    return { portfolio, summary, loading, error, fetchPortfolio, addAsset, updateAsset, deleteAsset };
+    return {
+        portfolio,
+        summary,
+        loading,
+        error: error?.message || null,
+        fetchPortfolio,
+        addAsset: addMutation.mutateAsync,
+        updateAsset: (assetId, assetData) => updateMutation.mutateAsync({ assetId, assetData }),
+        deleteAsset: deleteMutation.mutateAsync,
+        isAdding: addMutation.isPending,
+        isDeleting: deleteMutation.isPending,
+    };
 };

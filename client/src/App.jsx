@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -5,12 +6,30 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AnimatedBackground from './components/AnimatedBackground';
 import CustomCursor from './components/CustomCursor';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Portfolio from './pages/Portfolio';
-import Watchlist from './pages/Watchlist';
-import Alerts from './pages/Alerts';
+
+/* ── Lazy-loaded pages ── */
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Portfolio = lazy(() => import('./pages/Portfolio'));
+const Watchlist = lazy(() => import('./pages/Watchlist'));
+const Alerts = lazy(() => import('./pages/Alerts'));
+
+/* Page-level loading skeleton */
+const PageSkeleton = () => (
+    <div className="space-y-6 page-enter">
+        <div className="skeleton skeleton-heading" style={{ width: '30%' }} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton skeleton-card" style={{ animationDelay: `${i * 0.1}s` }} />
+            ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="skeleton" style={{ height: 300, borderRadius: '1rem' }} />
+            <div className="skeleton" style={{ height: 300, borderRadius: '1rem' }} />
+        </div>
+    </div>
+);
 
 /* Layout wrapper for authenticated pages */
 const AppLayout = () => (
@@ -34,7 +53,9 @@ const AppLayout = () => (
         {/* Main content */}
         <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12">
             <ErrorBoundary>
-                <Outlet />
+                <Suspense fallback={<PageSkeleton />}>
+                    <Outlet />
+                </Suspense>
             </ErrorBoundary>
         </main>
     </div>
